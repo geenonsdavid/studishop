@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import propsTypes from 'prop-types';
 import { stateTypes } from '../functions/stateTypes';
-import { Button } from 'antd';
 
 
 const CitySelector = (props) => {
@@ -102,7 +101,7 @@ export const FormDelivery = (props) => {
                 }
             </div>
 
-            <Button type="primary" size='small'>Validez</Button>
+            <button>Validez</button>
             
         </form>
 
