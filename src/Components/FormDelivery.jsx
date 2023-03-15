@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import propsTypes from 'prop-types';
+import { stateTypes } from '../functions/stateTypes';
+import { Button } from 'antd';
+
 
 const CitySelector = (props) => {
     const cityList = props.data.map((city) => {
@@ -17,41 +20,67 @@ const CitySelector = (props) => {
 }
 
 CitySelector.propTypes = {
-    data: PropTypes.arrayOf(PropTypes.shape({
-        codePostal: PropTypes.string,
-        codeCommune: PropTypes.string,
-        nomCommune: PropTypes.string,
-        libelleAcheminement: PropTypes.string,
-    })).isRequired
+    data: propsTypes.arrayOf(
+        propsTypes.shape({
+            codeCommune: propsTypes.string,
+            nomCommune: propsTypes.string,
+            codePostal: propsTypes.string,
+            libelleAcheminement: propsTypes.string
+        }
+        )
+    )
 }
 
+
 export const FormDelivery = (props) => {
+
     const [cityList, setCityList] = useState('');
     const [zipCode, setZipCode] = useState(0);
     const [error, setError] = useState(false);
 
+    console.log(typeof zipCode)
+    
+    useEffect(() => {
+
+        if (!stateTypes.number(zipCode)) {
+           return setError('Mauvais code postal');
+        }
+    }, [zipCode])
+
+
+
+
 
 
     const handleZipChange = (e) => {
-        setZipCode(e.target.value);
-        if (!isNaN(e.target.value) && e.target.value.length === 5) {
+        if (!isNaN(e.target.value)) {
+            if (e.target.value.length === 5) {
+            
             fetch(`https://apicarto.ign.fr/api/codes-postaux/communes/${e.target.value}`)
                 .then(response => {
                     if (response.ok) {
                         response.json()
                             .then(res => {
-                                setCityList(res);
+                                if (res.length > 0) {
+                                    setCityList(res);
+                                    setError(false);
+                                } else {
+                                    setCityList(false);
+                                }
                             })
 
                     } else {
                         setError(`Aucune ville trouvée pour le code postal ${e.target.value}`);
-                        setCityList('');
+                        setCityList(false);
                     }
                 })
                 .catch(err => {
-                setError(`Erreur lors de l'appel à l'API : ${error}`);
-                console.error(err);
-            })
+                    setError(`Erreur lors de l'appel à l'API , veuillez réessayer ultérieurement`);
+                    console.error(err);
+                })
+
+
+            }
         }
         return setZipCode(e.target.value);
 
@@ -61,9 +90,11 @@ export const FormDelivery = (props) => {
 
         <form className='form'>
             <div>
-                {error ? <p>{error}</p> : null}
+                
                 <label htmlFor="zipCode">Code postal </label>
-                <input type="number" id="zipCode" name="zipCode" value={zipCode} onChange={handleZipChange} />
+                
+                <input id="zipCode" name="zipCode" value={zipCode} type="number" onChange={handleZipChange} />
+                {error ? <p>{error}</p> : null}
             </div>
             <div>
 
@@ -71,8 +102,8 @@ export const FormDelivery = (props) => {
                 }
             </div>
 
-
-            <button className='button'>Envoyer</button>
+            <Button type="primary" size='small'>Validez</Button>
+            
         </form>
 
     )
